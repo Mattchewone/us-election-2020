@@ -1,0 +1,75 @@
+<html>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="index.js"></script>
+
+    <style>
+      *, *:before, *:after {
+        box-sizing: border-box;
+        padding: 0;
+      }
+
+      #app {
+        display: grid;
+        grid-gap: 1rem;
+      }
+
+      .row {
+        border-radius: 5px;
+        padding: 1rem;
+        background-color: lightgray;
+        color: #fff;
+      }
+
+      .dem-likely {
+        background-color: rgba(15,75,252, .4);
+      }
+
+      .rep-likely {
+        background-color: rgba(246,62,83, .4);
+      }
+
+      .rep {
+        background-color: red;
+      }
+
+      .dem {
+        background-color: blue;
+      }
+
+      .row.dem.flipped {
+        background-size: 62.23px 52.22px;
+        background-image: linear-gradient(140deg, #1017de 25%, #4a0ffc 25%, #4a0ffc 50%, #1017de 50%, #1017de 75%, #4a0ffc 75%, #4a0ffc 100%);
+      }
+
+      .row.rep.flipped {
+        background-size: 62.23px 52.22px;
+        background-image: linear-gradient(140deg, #f50c28 25%, #f75669 25%, #f75669 50%, #f50c28 50%, #f50c28 75%, #f75669 75%, #f75669 100%);
+      }
+
+      .candidates > p:first-child {
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+
+      p {
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+
+    <div id="app">
+      <div
+        v-for="state in results"
+        :key="state.stateCode"
+        class="row"
+        :class="{ 'dem': isDem(state), 'rep': isRep(state), 'flipped': state.isFlipped, 'rep-likely': isLeaningRep(state), 'dem-likely': isLeaningDem(state) }"
+      >
+        {{state.stateCode}} - {{state.diff}} (delegates {{state.availableDelegates}})
+        <div class="candidates">
+          <p v-for="res in state.results" :key="res.candidateNpid">{{res.candidate.firstName}} {{res.candidate.lastName}} = {{res.isWinner}} ({{res.votes.percentage}})</p>
+        </div>
+      </div>
+    </div>    
+  </body>
+</html>
