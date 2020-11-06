@@ -1,4 +1,7 @@
 <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
   <body>
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <script src="index.js"></script>
@@ -8,43 +11,171 @@
         box-sizing: border-box;
         padding: 0;
       }
+      html, body {
+        padding: 0;
+        margin: 0;
+      }
+      html {
+        margin: 0 .5rem;
+      }
+      body {
+        font-family: "Lato", Helvetica, Arial, sans-serif;
+      }
 
       #app {
+        width: 100%;
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 200px 1fr 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+          "header header header"
+          "sidebar main main";
+        grid-gap: 1rem;
+      }
+
+      @media only screen and (max-width: 1024px) {
+        #app {
+          width: 100%;
+          height: 100vh;
+          display: grid;
+          grid-template-columns: 200px 1fr;
+          grid-template-rows: auto 70% 200px;
+          grid-template-areas:
+            "header header"
+            "main main"
+            "sidebar sidebar";
+          grid-gap: 1rem;
+        }
+      }
+
+      .main {
+        grid-area: main;
+        width: 100%;
+        overflow: scroll;
+      }
+      .sidebar {
+        grid-area: sidebar;
+        width: 100%;
+        display: grid;
+        grid-template-areas: 
+          "legend-header"
+          "legend"
+        ;
+        grid-template-rows: auto 1fr;
+        justify-content: center;
+      }
+
+      .legend-title {
+        grid-area: legend-header;
+        margin-left: 2rem;
+      }
+      .legend {
+        display: grid;
+        grid-area: legend;
+        width: 100%;
+        grid-template-rows: repeat(auto-fit, 80px);
+        grid-gap: .2rem;
+      }
+      .legend__item {
+        display: grid;
+        width: 100%;
+        grid-template-columns: 60px auto;
+        align-items: center;
+        margin-left: 2rem;
+      }
+
+      @media only screen and (max-width: 1024px) {
+        .sidebar {
+          grid-area: sidebar;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
+
+        .legend {
+          display: grid;
+          grid-area: legend;
+          width: 100%;
+          grid-template-columns: repeat(auto-fit, 120px);
+        }
+      }
+
+      .box {
+        width: 50px;
+        height: 50px;
+      }
+
+      .leader-board {
+        grid-area: header;
+        text-align: center;
+        font-size: 2rem;
+        padding-top: .5rem;
+        font-weight: bold;
+        width: 100%;
+      }
+      .leader-board .info {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: normal;
+      }
+
+      .wrapper {
         display: grid;
         grid-gap: 1rem;
+        width: 60%;
+        margin: 0 auto;
+        height: 100%;
+      }
+
+      @media only screen and (max-width: 1024px) {
+        .wrapper {
+          margin: 0;
+          width: 100%;
+        }
       }
 
       .row {
         border-radius: 5px;
         padding: 1rem;
         background-color: lightgray;
-        color: #fff;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
       }
 
       .dem-likely {
         background-color: rgba(15,75,252, .4);
+        color: #000;
       }
 
       .rep-likely {
         background-color: rgba(246,62,83, .4);
+        color: #000;
       }
 
       .rep {
         background-color: red;
+        color: #fff;
       }
 
       .dem {
         background-color: blue;
+        color: #fff;
       }
 
-      .row.dem.flipped {
+      .dem-flipped {
         background-size: 62.23px 52.22px;
         background-image: linear-gradient(140deg, #1017de 25%, #4a0ffc 25%, #4a0ffc 50%, #1017de 50%, #1017de 75%, #4a0ffc 75%, #4a0ffc 100%);
       }
 
-      .row.rep.flipped {
+      .rep-flipped {
         background-size: 62.23px 52.22px;
         background-image: linear-gradient(140deg, #f50c28 25%, #f75669 25%, #f75669 50%, #f50c28 50%, #f50c28 75%, #f75669 75%, #f75669 100%);
+      }
+
+      .candidates {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
       }
 
       .candidates > p:first-child {
@@ -59,17 +190,72 @@
     </style>
 
     <div id="app">
-      <div
-        v-for="state in results"
-        :key="state.stateCode"
-        class="row"
-        :class="{ 'dem': isDem(state), 'rep': isRep(state), 'flipped': state.isFlipped, 'rep-likely': isLeaningRep(state), 'dem-likely': isLeaningDem(state) }"
-      >
-        {{state.stateCode}} - {{state.diff}} (delegates {{state.availableDelegates}})
-        <div class="candidates">
-          <p v-for="res in state.results" :key="res.candidateNpid">{{res.candidate.firstName}} {{res.candidate.lastName}} = {{res.isWinner}} ({{res.votes.percentage}})</p>
-        </div>
+      <div class="leader-board">
+        <span class="info">Current estimated seats: </span>
+
+        Biden {{eCollegeSeats.biden}} - Trump {{eCollegeSeats.trump}}
       </div>
+      <section class="sidebar">
+        <h2 class="legend-title">Legend:</h2>
+        <div class="legend">
+          <div class="legend__item">
+            <span class="box dem"></span>
+            <p>Dem</p>
+          </div>
+          <div class="legend__item">
+            <span class="box dem-likely"></span>
+            <p>Dem Likely</p>
+          </div>
+          <div class="legend__item">
+            <span class="box dem-flipped"></span>
+            <p>Dem Flipped</p>
+          </div>
+          <div class="legend__item">
+            <span class="box rep"></span>
+            <p>Rep</p>
+          </div>
+          <div class="legend__item">
+            <span class="box rep-likely"></span>
+            <p>Rep Likely</p>
+          </div>
+          <div class="legend__item">
+            <span class="box rep-flipped"></span>
+            <p>Rep Flipped</p>
+          </div>
+        </div>
+      </section>
+      <section class="main">
+        <div class="wrapper">
+          <div
+            v-for="state in results"
+            :key="state.stateCode"
+            class="row"
+            :class="[
+              { 'dem': isDem(state), 'rep': isRep(state), 'rep-likely': isLeaningRep(state), 'dem-likely': isLeaningDem(state) },
+              state.isFlipped ?
+                isDem(state) ?
+                  'dem-flipped' : 'rep-flipped'
+                : '',
+            ]"
+          >
+            <div class="state-info">
+              <div class="state-info__text">
+                {{state.stateCode}} - {{state.diffP}} (delegates {{state.availableDelegates}})
+              </div>
+              <div>
+                Counted: {{state.expectedPercentage}}%
+              </div>
+            </div>
+            <div class="candidates">
+              <div v-for="res in state.results" :key="res.candidateNpid">
+                {{res.candidate.firstName}} {{res.candidate.lastName}} ({{res.votes.percentage}})
+                <br>
+                Percent of counted: {{res.votes.pCounted}}%
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>    
   </body>
 </html>
